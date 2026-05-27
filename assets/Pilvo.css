@@ -1,0 +1,636 @@
+/*
+  ****************************************************
+  *  Author: Armin Silatani
+  *  Date: 2026-05-22
+  *  Version: 1.1.1 (Fixed Toolbar Single-Line Scroll)
+  ****************************************************
+*/
+
+/* :::::::::::::::::::::::::: FONTS :::::::::::::::::::::::::: */
+@font-face {
+  font-family: "Kalameh";
+  src: url("../assets/fonts/KalamehWeb-Regular.woff2") format("woff2"),
+       url("../assets/fonts/KalamehWeb-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kalameh";
+  src: url("../assets/fonts/KalamehWeb-Black.woff2") format("woff2"),
+       url("../assets/fonts/KalamehWeb-Black.woff") format("woff");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* :::::::::::::::::::::::::: RESET & VARIABLES :::::::::::::::::::::::::: */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0D0D0D;
+  --accent: #A200FF;
+  --accent-glow: rgba(162, 0, 255, 0.3);
+  --text: #E0E0E0;
+  --editor-bg: #1A1A1A;
+  --border: #262626;
+  --hover-bg: #222;
+  --toolbar-bg: #111;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: 'Kalameh', sans-serif;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  user-select: none;
+}
+
+/* ------------------------- TOP BAR ------------------------- */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-img {
+  height: 70px;
+  width: auto;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+.logo-img:hover {
+  opacity: 1;
+}
+
+.site-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.site-title .pilvo {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.site-title .sub {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #F5F5F5;
+  letter-spacing: 0.04em;
+}
+
+/* =========================== TOOLBAR SCROLL CONTAINER ============================ */
+.toolbar-scroll-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 8px;
+}
+
+.toolbar-scroll-viewport {
+  flex: 1;
+  overflow: hidden;                     /* hides scrollbar visually */
+}
+
+/* ------------------------- TOOLBAR ------------------------- */
+.toolbar {
+  display: flex;
+  flex-wrap: nowrap;                    /* Prevent line break */
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0;                     /* horizontal padding handled by wrapper */
+  background: transparent;             /* background comes from wrapper */
+  border-bottom: none;                 /* border comes from wrapper */
+  overflow-x: auto;                    /* Enable horizontal scrolling */
+  white-space: nowrap;
+  /* Hide scrollbar */
+  -ms-overflow-style: none;            /* IE/Edge */
+  scrollbar-width: none;               /* Firefox */
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;                       /* Chrome/Safari/Opera */
+}
+
+/* Arrow buttons */
+.toolbar-arrow {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.toolbar-arrow:hover {
+  background: var(--hover-bg);
+  color: #fff;
+}
+
+.toolbar-arrow.hidden {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* ------------------------- BUTTONS & SELECT ------------------------- */
+.tool-btn,
+.tool-select {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0 8px;
+  flex-shrink: 0;                      /* Prevent buttons from shrinking */
+}
+
+.tool-btn {
+  width: 36px;
+  padding: 0;
+}
+
+.tool-select {
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23aaa' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 28px;
+}
+
+.tool-btn:hover,
+.tool-select:hover {
+  background: var(--hover-bg);
+  color: #fff;
+}
+
+.tool-btn.active {
+  color: white;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Hidden color inputs */
+.hidden-color-input {
+  display: none;
+}
+
+/* ------------------------- EMOJI PANEL ------------------------- */
+.emoji-panel {
+  position: fixed;
+  background: #1E1E1E;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 8px;
+  z-index: 1000;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.7);
+  display: none;
+  max-width: calc(100vw - 32px);
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 56px;
+  align-items: center;
+}
+
+.emoji-panel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.emoji-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.emoji-panel::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 2px;
+}
+
+.emoji-row {
+  display: flex;
+  gap: 4px;
+  height: 100%;
+}
+
+.emoji-row button {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.emoji-row button:hover {
+  background: #333;
+}
+
+/* ------------------------- EDITOR AREA ------------------------- */
+.editor-wrapper {
+  flex: 1;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* ------------------------- EDITOR CONTAINER (for copy button) ------------------------- */
+.editor-container {
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+}
+
+/* ------------------------- COPY ALL BUTTON ------------------------- */
+.copy-all-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border);
+  color: #aaa;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.copy-all-btn:hover {
+  background: var(--hover-bg);
+  color: #fff;
+  opacity: 1;
+  border-color: #555;
+}
+
+.copy-all-btn:active {
+  transform: scale(0.95);
+}
+
+/* Fade-in animation */
+.copy-all-btn.show {
+  display: flex !important;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+}
+
+.editor {
+  width: 100%;
+  max-width: 800px;
+  min-height: 400px;
+  background: var(--editor-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 36px;
+  font-family: 'Kalameh', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: #f0f0f0;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  caret-color: var(--accent);
+  position: relative;
+}
+
+.editor:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.editor:empty::before {
+  content: "Start writing...";
+  color: #555;
+  pointer-events: none;
+}
+
+.editor.code-view {
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e0e0e0;
+  white-space: pre-wrap;
+  tab-size: 2;
+  border-color: var(--accent);
+}
+
+/* ------------------------- COUNTER BAR ------------------------- */
+.counter-bar {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0 0;
+}
+
+.counter {
+  font-size: 0.7rem;
+  color: #666;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+}
+
+/* ------------------------- FOOTER ------------------------- */
+.footer {
+  padding: 30px 0;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+}
+
+.footer-signature {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.footer-signature:hover {
+  opacity: 1;
+}
+
+.crafted {
+  font-size: 10px;
+  color: #7a7a7a;
+  letter-spacing: 0.08em;
+}
+
+.signature {
+  height: 20px;
+  transform: translateY(-2px);
+  opacity: 0.85;
+  filter: brightness(0.9) contrast(1.05);
+}
+
+/* =========================== FOOTER LINK OVERRIDE ============================ */
+.footer-signature a {
+  display: contents;
+  text-decoration: none;
+  color: inherit;
+}
+
+.footer-signature a:hover {
+  text-decoration: none;
+}
+
+/* =========================== LINK MODAL =========================== */
+.link-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.link-modal {
+  background: var(--editor-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 24px;
+  min-width: 360px;
+  max-width: 90%;
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+}
+
+.link-modal h3 {
+  margin: 0 0 16px;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.link-modal label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.link-modal input[type="text"] {
+  width: 100%;
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text);
+  margin-bottom: 16px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.link-modal input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+.link-option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.link-option-row label {
+  margin: 0;
+  cursor: pointer;
+}
+
+.rel-section {
+  margin-bottom: 16px;
+}
+
+.rel-label {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.rel-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.rel-checks label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.link-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.link-modal-actions button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+#linkInsertBtn {
+  background: var(--accent);
+  color: white;
+}
+
+#linkRemoveBtn {
+  background: #e74c3c;
+  color: white;
+}
+
+#linkCancelBtn {
+  background: #333;
+  color: #ccc;
+}
+
+/* =========================== TABLE IN EDITOR =========================== */
+.editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.editor td,
+.editor th {
+  border: 1px solid #444;
+  padding: 8px;
+  min-width: 60px;
+}
+
+/* =========================== SEO PANEL =========================== */
+.seo-panel {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 300px;
+  background: var(--editor-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  z-index: 1500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  color: var(--text);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.seo-panel h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.seo-metric {
+  margin-bottom: 12px;
+}
+
+.seo-metric span {
+  font-size: 0.8rem;
+  color: #aaa;
+  display: block;
+}
+
+.seo-metric strong {
+  font-size: 1rem;
+}
+
+.seo-metric ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 4px 0 0;
+}
+
+.seo-metric li {
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.seo-meta-preview {
+  background: #111;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-top: 4px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* =========================== REMOVE FORMAT BUTTON =========================== */
+#removeFormatBtn sub {
+  font-size: 0.65rem;
+}
